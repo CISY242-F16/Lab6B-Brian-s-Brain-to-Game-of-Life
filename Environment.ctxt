@@ -25,5 +25,5 @@ comment7.target=void\ setup(int,\ int)
 comment7.text=\n\ Setup\ a\ new\ environment\ of\ the\ given\ size.\n\ @param\ numRows\ The\ number\ of\ rows.\n\ @param\ numCols\ The\ number\ of\ cols;\n
 comment8.params=
 comment8.target=void\ setupNeighbors()
-comment8.text=\n\ Give\ to\ a\ cell\ a\ list\ of\ its\ neighbors.\n
+comment8.text=\n\ Give\ to\ a\ cell\ a\ list\ of\ its\ neighbors.\ Depending\ on\ loaction,\ neighbors\ do\ not\ wrap\ around\ if\ cell\ is\ on\ the\ edge\ of\ its\ environment\n
 numComments=9

@@ -2,10 +2,11 @@ import java.security.SecureRandom;
 import java.util.*;
 
 /**
- * Maintain the environment for a 2D cellular automaton.
+ * Maintain the environment for a 2D cellular automaton according to the rules of Conway's Game of Life.
  * 
  * @author David J. Barnes
- * @version  2016.02.29
+ * @author Dana Sabatino
+ * @version  2016.12.05
  */
 public class Environment
 {
@@ -17,6 +18,10 @@ public class Environment
     private Cell[][] cells;
     // Visualization of the environment.
     private final EnvironmentView view;
+    // integer to hold the number of rows.
+    private int numberRows;
+    // integer to hold the number of columns
+    private int numberColumns;
 
     /**
      * Create an environment with the default size.
@@ -34,7 +39,11 @@ public class Environment
     public Environment(int numRows, int numCols)
     {
         setup(numRows, numCols);
+        numberRows = numRows;
+        numberColumns = numCols;
         randomize();
+        setupNeighbors();
+        
         view = new EnvironmentView(this, numRows, numCols);
         view.showCells();
     }
@@ -44,21 +53,19 @@ public class Environment
      */
     public void step()
     {
-        int numRows = cells.length;
-        int numCols = cells[0].length;
         // Build a record of the next state of each cell.
-        int[][] nextStates = new int[numRows][numCols];
+        int[][] nextStates = new int[numberRows][numberColumns];
         // Ask each cell to determine its next state.
-        for(int row = 0; row < numRows; row++) {
+        for(int row = 0; row < numberRows; row++) {
             int[] rowOfStates = nextStates[row];
-            for(int col = 0; col < numCols; col++) {
+            for(int col = 0; col < numberColumns; col++) {
                 rowOfStates[col] = cells[row][col].getNextState();
             }
         }
         // Update the cells' states.
-        for(int row = 0; row < numRows; row++) {
+        for(int row = 0; row < numberRows; row++) {
             int[] rowOfStates = nextStates[row];
-            for(int col = 0; col < numCols; col++) {
+            for(int col = 0; col < numberColumns; col++) {
                 setCellState(row, col, rowOfStates[col]);
             }
         }
@@ -69,10 +76,8 @@ public class Environment
      */
     public void reset()
     {
-        int numRows = cells.length;
-        int numCols = cells[0].length;
-        for(int row = 0; row < numRows; row++) {
-            for(int col = 0; col < numCols; col++) {
+        for(int row = 0; row < numberRows; row++) {
+            for(int col = 0; col < numberColumns; col++) {
                 setCellState(row, col, Cell.DEAD);
             }
         }
@@ -83,12 +88,10 @@ public class Environment
      */
     public void randomize()
     {
-        int numRows = cells.length;
-        int numCols = cells[0].length;
         SecureRandom rand = new SecureRandom();
-        for(int row = 0; row < numRows; row++) {
-            for(int col = 0; col < numCols; col++) {
-                setCellState(row, col, rand.nextInt(Cell.NUM_STATES));
+        for(int row = 0; row < numberRows; row++) {
+            for(int col = 0; col < numberColumns; col++) {
+                setCellState(row, col, rand.nextInt(2));
             }
         }
     }
@@ -126,32 +129,98 @@ public class Environment
                 cells[row][col] = new Cell();
             }
         }
-        setupNeighbors();
+       // setupNeighbors();
     }
     
     /**
-     * Give to a cell a list of its neighbors.
+     * Give to a cell a list of its neighbors. Depending on loaction, neighbors do not wrap around if cell is on the edge of its environment
      */
     private void setupNeighbors()
     {
-        int numRows = cells.length;
-        int numCols = cells[0].length;
         // Allow for 8 neighbors plus the cell.
         ArrayList<Cell> neighbors = new ArrayList<>(9);
-        for(int row = 0; row < numRows; row++) {
-            for(int col = 0; col < numCols; col++) {
+        for(int row = 0; row < numberRows; row++) {
+            for(int col = 0; col < numberColumns; col++) {
                 Cell cell = cells[row][col];
                 // This process will also include the cell.
-                for(int dr = -1; dr <= 1; dr++) {
-                    for(int dc = -1; dc <= 1; dc++) {
-                        int nr = (numRows + row + dr) % numRows;
-                        int nc = (numCols + col + dc) % numCols;
-                        neighbors.add(cells[nr][nc]);
+                if(row == 0 || row == (numberRows - 1) || col == 0 || col == (numberColumns - 1))
+                {
+                    if (row == 0)
+                    {
+                        if(col == 0)
+                        {
+                            neighbors.add(cells[0][1]);
+                            neighbors.add(cells[1][0]);
+                            neighbors.add(cells[1][1]);
+                        }
+                        else if(col == (numberColumns - 1))
+                        {
+                            neighbors.add(cells[0][numberColumns - 2]);
+                            neighbors.add(cells[1][numberColumns - 2]);
+                            neighbors.add(cells[1][numberColumns - 1]);
+                        }
+                        else
+                        {
+                            neighbors.add(cells[0][col - 1]);
+                            neighbors.add(cells[0][col + 1]);
+                            neighbors.add(cells[1][col - 1]);
+                            neighbors.add(cells[1][col]);
+                            neighbors.add(cells[1][col + 1]);
+                        }
                     }
+                   else if(row == (numberRows - 1))
+                   {
+                       if(col == 0)
+                       {
+                            neighbors.add(cells[numberRows - 2][0]);
+                            neighbors.add(cells[numberRows - 2][1]);
+                            neighbors.add(cells[numberRows - 1][1]);
+                       }
+                       else if(col == (numberColumns - 1))
+                       {
+                           neighbors.add(cells[numberRows - 2][numberColumns - 2]);
+                           neighbors.add(cells[numberRows - 2][numberColumns - 1]);
+                           neighbors.add(cells[numberRows - 1][numberColumns - 2]);
+                       }
+                       else
+                       {
+                           neighbors.add(cells[numberRows - 1][col - 1]);
+                           neighbors.add(cells[numberRows - 1][col + 1]);
+                           neighbors.add(cells[numberRows - 2][col - 1]);
+                           neighbors.add(cells[numberRows - 2][col]);
+                           neighbors.add(cells[numberRows - 2][col + 1]);
+                       }
+                    }
+                    else if(col == (numberColumns - 1))
+                    {
+                        neighbors.add(cells[row - 1][numberColumns - 2]);
+                        neighbors.add(cells[row - 1][numberColumns - 1]);
+                        neighbors.add(cells[row][numberColumns - 2]);
+                        neighbors.add(cells[row + 1][numberColumns - 2]);
+                        neighbors.add(cells[row + 1][numberColumns - 1]);
+                   }
+                   else
+                   {
+                       neighbors.add(cells[row - 1][0]);
+                       neighbors.add(cells[row - 1][1]);
+                       neighbors.add(cells[row][1]);
+                       neighbors.add(cells[row + 1][0]);
+                       neighbors.add(cells[row + 1][1]);
+                   }
                 }
-                // The neighbours should not include the cell at
-                // (row,col) so remove it.
-                neighbors.remove(cell);
+                else
+                {
+                    for(int dr = -1; dr <= 1; dr++) {
+                        for(int dc = -1; dc <= 1; dc++) {
+                            int nr = (row + dr) % numberRows;
+                            int nc = (col + dc) % numberColumns;
+                            neighbors.add(cells[nr][nc]);
+                        }
+                    }   
+                    // The neighbours should not include the cell at
+                    // (row,col) so remove it.
+                    neighbors.remove(cell);
+                }
                 cell.setNeighbors(neighbors);
                 neighbors.clear();
             }
