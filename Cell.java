@@ -3,18 +3,19 @@ import java.util.*;
 /**
  * A cell in a 2D cellular automaton.
  * The cell has multiple possible states.
- * This is an implementation of the rules for Brian's Brain.
- * @see https://en.wikipedia.org/wiki/Brian%27s_Brain
+ * This is an implementation of the rules for Conways Game of Life.
+ * @see https://en.wikipedia.org/wiki/Conway's_Game_of_Life
  * 
  * @author David J. Barnes and Michael Kölling
- * @version  2016.02.29
+ * @author Dana Sabatino
+ * @version  2016.12.05
  */
 public class Cell
 {
     // The possible states.
-    public static final int ALIVE = 0, DEAD = 1, DYING = 2;
+    public static final int ALIVE = 0, DEAD = 1;
     // The number of possible states.
-    public static final int NUM_STATES = 3;
+    public static final int NUM_STATES = 2;
 
     // The cell's state.
     private int state;
@@ -42,26 +43,30 @@ public class Cell
     /**
      * Determine this cell's next state, based on the
      * state of its neighbors.
-     * This is an implementation of the rules for Brian's Brain.
+     * This is an implementation of the rules for Conway's game of life.
      * @return The next state.
      */
     public int getNextState()
     {
-        if(state == DEAD) {
-            // Count the number of neighbors that are alive.
-            int aliveCount = 0;
-            for(Cell n : neighbors) {
-                if(n.getState() == ALIVE) {
-                    aliveCount++;
-                }
+        // Count the number of neighbors that are alive.
+        int aliveCount = 0;
+        for(Cell n : neighbors) {
+            if(n.getState() == ALIVE) {
+                aliveCount++;
             }
-            return aliveCount == 2 ? ALIVE : DEAD;
         }
-        else if(state == DYING) {
-            return DEAD;
+        if(state == DEAD) {
+            return aliveCount == 3 ? ALIVE : DEAD;
         }
         else {
-            return DYING;
+            if(aliveCount == 2 || aliveCount == 3)
+            {
+                return ALIVE;
+            }
+            else
+            {
+                return DEAD;
+            }
         }
     }
     
